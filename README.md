@@ -6,3 +6,5 @@ in here to use the 0th note.
 
 
 https://cinnamon-spices.linuxmint.com/desklets/view/36
+
+![image](https://github.com/user-attachments/assets/79e596ac-f627-4bf7-b99a-8c5e71d6bd78)
