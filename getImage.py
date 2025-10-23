@@ -4,12 +4,18 @@ import json
 import datetime
 import shutil
 
-URL = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
-FILENAME = "/home/joe/Pictures/nasa/" + str(datetime.date.today().day) + "-" + str(datetime.date.today().month) + "-" + str(datetime.date.today().year) + ".jpg"
-TODAYPATH = "/home/joe/Pictures/nasa/today/"
+DATESTR = str(datetime.date.today().year) + str(datetime.date.today().month) + str(datetime.date.today().day)
+NASAURL = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
+PICSUMURL = "https://picsum.photos/seed/" + DATESTR + "/1920/1080"
+FILENAME = "/home/joe/Pictures/nasa/" + DATESTR + ".jpg"
+TODAYPATH = "/home/joe/Pictures/today/"
 TODAYFILE = TODAYPATH + "today.jpg"
 NOTEFILE = "/home/joe/.config/cinnamon/spices/deskNote@BrainAxe/0.json"
 
+print("debugg..")
+print(DATESTR)
+
+#TODO need a pretty big refactor because nasa api format is different.  need to isolate image-getting and the nasa stuff each separately.
 if not os.path.isfile(FILENAME):
     #send request
     r = requests.get(URL)
