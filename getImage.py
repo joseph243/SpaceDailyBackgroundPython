@@ -17,12 +17,19 @@ def read_config_file(inPath):
 	assert "photoSet" in configs, "config file at " + inPath + " must contain photoSet."
 	assert "savePictures" in configs, "config file at " + inPath + " must contain savePictures"
 	return configs
-    
-URL = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
+
 FILENAME = "/home/joe/Pictures/nasa/" + str(datetime.date.today().day) + "-" + str(datetime.date.today().month) + "-" + str(datetime.date.today().year) + ".jpg"
 TODAYPATH = "/home/joe/Pictures/nasa/today/"
+DATESTR = str(datetime.date.today().year) + str(datetime.date.today().month) + str(datetime.date.today().day)
+NASAURL = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
+PICSUMURL = "https://picsum.photos/seed/" + DATESTR + "/1920/1080"
+FILENAME = "/home/joe/Pictures/nasa/" + DATESTR + ".jpg"
+TODAYPATH = "/home/joe/Pictures/today/"
 TODAYFILE = TODAYPATH + "today.jpg"
 NOTEFILE = "/home/joe/.config/cinnamon/spices/deskNote@BrainAxe/0.json"
+
+print("debugg..")
+print(DATESTR)
 
 if not os.path.isfile(FILENAME):
     #send request
