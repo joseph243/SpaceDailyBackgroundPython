@@ -4,6 +4,20 @@ import json
 import datetime
 import shutil
 
+def read_config_file(inPath):
+	print("reading configuration from " + inPath)
+	inPath = os.path.expanduser(inPath)
+	configs = {}
+	with (open(inPath)) as file:
+		for line in file:
+			if ":" in line:
+				key, value = line.split(':', 1)
+				configs[key.strip()] = value.strip()
+	assert "dailyPhotoPath" in configs, "config file at " + inPath + " must contain dailyPhotoPath."
+	assert "photoSet" in configs, "config file at " + inPath + " must contain photoSet."
+	assert "savePictures" in configs, "config file at " + inPath + " must contain savePictures"
+	return configs
+    
 URL = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
 FILENAME = "/home/joe/Pictures/nasa/" + str(datetime.date.today().day) + "-" + str(datetime.date.today().month) + "-" + str(datetime.date.today().year) + ".jpg"
 TODAYPATH = "/home/joe/Pictures/nasa/today/"
