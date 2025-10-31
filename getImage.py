@@ -1,62 +1,87 @@
-import os
-import requests
-import json
-import datetime
-import shutil
+import os, sys, requests, json, datetime
 
-URL = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
-FILENAME = "/home/joe/Pictures/nasa/" + str(datetime.date.today().day) + "-" + str(datetime.date.today().month) + "-" + str(datetime.date.today().year) + ".jpg"
-TODAYPATH = "/home/joe/Pictures/nasa/today/"
-TODAYFILE = TODAYPATH + "today.jpg"
-NOTEFILE = "/home/joe/.config/cinnamon/spices/deskNote@BrainAxe/0.json"
+def read_config_file():
+	path = "space.config"
+	print("reading configuration from " + path)
+	path = os.path.expanduser(path)
+	configs = {}
+	with (open(path)) as file:
+		for line in file:
+			if ":" in line:
+				key, value = line.split(':', 1)
+				configs[key.strip()] = value.strip()
+	assert "photoStyle" in configs, "config file at " + path + " must contain photoStyle."
+	assert "saveOldPictures" in configs, "config file at " + path + " must contain saveOldPictures."
+	assert "pathForDailyBackground" in configs, "config file at " + path + " must contain pathForDailyBackground"
+	if ("True" in configs["saveOldPictures"]):
+		assert "pathForArchiveBackground" in configs, "config file at " + path + " must contain pathForArchiveBackground"
+	return configs
 
-if not os.path.isfile(FILENAME):
-    #send request
-    r = requests.get(URL)
-    result = json.loads(r.text)
+def parseNote(inNote):
+	#add newlines /n every 175 ch
+	if len(inNote) > 175:
+		morelinesneeded = 1
+	else:
+		morelinesneeded = 0
+	noteMultiLine = ""
+	while morelinesneeded:
+		thisLine = inNote[:175] + '-' + "\n"
+		noteMultiLine = noteMultiLine + thisLine
+		inNote = inNote[175:]
+		if len(inNote) > 175:
+			morelinesneeded = 1
+		else:
+			morelinesneeded = 0
+			noteMultiLine = noteMultiLine + inNote
+	return noteMultiLine
 
-    #grab json where note will be sent
-    with open(NOTEFILE) as f:
-        notefilejson = json.load(f)
+def alreadyRanToday(filepath):
+    if not os.path.exists(filepath):
+        return False
+    mod_time = datetime.datetime.fromtimestamp(os.path.getmtime(filepath))
+    return mod_time.date() == datetime.date.today()
 
-    #get note
-    note = result["explanation"]
+def main():
+	configs = read_config_file()
+	photoStyle = configs["photoStyle"]
+	saveOldPictures = ("True" in configs["saveOldPictures"])
+	pathForDailyBackground = configs["pathForDailyBackground"]
+	pathForArchiveBackground = configs["pathForArchiveBackground"]
+	DATESTR = str(datetime.date.today().year) + "-" + str(datetime.date.today().month) + "-" + str(datetime.date.today().day)
+	if alreadyRanToday(pathForDailyBackground):
+		print("ALREADY RAN TODAY.  EXITING.")
+		sys.exit(0)
+	match photoStyle.upper():
+		case "NASA":
+			includeDescription = True;
+			URL = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
+			NOTEFILE = "/home/joe/.config/cinnamon/spices/deskNote@BrainAxe/0.json"
+			print("using NASA daily photo per config file. url = " + URL)
+			r = requests.get(URL)
+			result = json.loads(r.text)
+			with open(NOTEFILE) as f:
+				notefilejson = json.load(f)
+			note = parseNote(result["explanation"])
+			notefilejson["note-entry"]["value"] = note
+			with open (NOTEFILE, "w") as f:
+				json.dump(notefilejson, f)
+			image = requests.get(result["url"]).content
+		case "PICSUM":
+			includeDescription = False;
+			URL = "https://picsum.photos/seed/" + DATESTR + "/1920/1080"
+			print("using picsum daily photo per config file.  url = " + URL)
+			image = requests.get(URL).content
 
-    #add newlines /n every 175 ch
-    if len(note) > 175:
-        morelinesneeded = 1
-    else:
-        morelinesneeded = 0
+	if saveOldPictures:
+		#create and write jpg to archive
+		print("ARCHIVING IMAGE")
+		file = open(pathForArchiveBackground + DATESTR, "wb")
+		file.write(image)
 
-    noteMultiLine = ""
-    while morelinesneeded:
-        thisLine = note[:175] + '-' + "\n"
-        noteMultiLine = noteMultiLine + thisLine
-        note = note[175:]
-        if len(note) > 175:
-            morelinesneeded = 1
-        else:
-            morelinesneeded = 0
-            noteMultiLine = noteMultiLine + note
-    
-    #write note and save to json for desktop notepad
-    print("SAVING NOTE")
-    notefilejson["note-entry"]["value"] = noteMultiLine
-    with open (NOTEFILE, "w") as f:
-        json.dump(notefilejson, f)
+	#write jpg to todays background
+	print("SAVING TODAYS IMAGE: " + pathForDailyBackground)
+	file = open(pathForDailyBackground, "wb")
+	file.write(image)
 
-    #create and write jpg to archive
-    print("SAVING IMAGE")
-    file = open(FILENAME, "wb")
-    file.write(requests.get(result["url"]).content)
-
-    #remove current background
-    for a in os.listdir(TODAYPATH):
-        print("REMOVING FILE: " + TODAYPATH + a)
-        os.remove(TODAYPATH + a)
-
-    #copy jpg to todays background
-    print("SAVING FILE FOR TODAYS BACKGROUND: " + TODAYFILE)
-    shutil.copy(FILENAME, TODAYFILE)
-else:
-    print("NASA DAILY IMAGE ALREADY EXISTS FOR TODAY, TOOK NO ACTION.")
+if __name__ == "__main__":
+	main()
