@@ -2,7 +2,7 @@ import os, sys, requests, json, datetime
 
 def read_config_file():
 	path = "space.config"
-	print("reading configuration from " + path)
+	print("reading configuration from " + os.getcwd() + "/" + path)
 	path = os.path.expanduser(path)
 	configs = {}
 	with (open(path)) as file:
