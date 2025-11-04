@@ -42,6 +42,7 @@ def alreadyRanToday(filepath):
     return mod_time.date() == datetime.date.today()
 
 def main():
+	os.chdir(os.path.dirname(os.path.abspath(__file__)))
 	configs = read_config_file()
 	photoStyle = configs["photoStyle"]
 	saveOldPictures = ("True" in configs["saveOldPictures"])

@@ -6,7 +6,8 @@ in here to use the 0th note.
 
 i run this via cron:
 ```
-00 9	* * *	joe	python3 /home/joe/PythonWorkspace/spaceBackground/getImage.py
+crontab -e
+00 * * * * python3 /home/joe/PythonWorkspace/SpaceDailyBackgroundPython/getImage.py > .dailyBackground.log 2>&1
 ```
 
 https://cinnamon-spices.linuxmint.com/desklets/view/36
