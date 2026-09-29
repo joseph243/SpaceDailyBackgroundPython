@@ -60,13 +60,16 @@ def main():
 			print("using NASA daily photo per config file. url = " + URL)
 			r = requests.get(URL)
 			result = json.loads(r.text)
-			with open(NOTEFILE) as f:
-				notefilejson = json.load(f)
-			note = parseNote(result["explanation"])
-			notefilejson["note-entry"]["value"] = note
-			with open (NOTEFILE, "w") as f:
-				json.dump(notefilejson, f)
 			image = requests.get(result["url"]).content
+			try:
+				with open(NOTEFILE) as f:
+					notefilejson = json.load(f)
+				note = parseNote(result["explanation"])
+				notefilejson["note-entry"]["value"] = note
+				with open (NOTEFILE, "w") as f:
+					json.dump(notefilejson, f)
+			except FileNotFoundError:
+				print("did not save note because note file is not found at " + NOTEFILE)
 		case "PICSUM":
 			includeDescription = False;
 			URL = "https://picsum.photos/seed/" + DATESTR + "/1920/1080"
