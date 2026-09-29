@@ -55,12 +55,14 @@ def main():
 	match photoStyle.upper():
 		case "NASA":
 			includeDescription = True;
-			URL = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
+			URL = "https://science.nasa.gov/wp-json/wp/v2/apod-basic?api_key=DEMO_KEY"
 			NOTEFILE = "/home/joe/.config/cinnamon/spices/deskNote@BrainAxe/0.json"
 			print("using NASA daily photo per config file. url = " + URL)
 			r = requests.get(URL)
 			result = json.loads(r.text)
-			image = requests.get(result["url"]).content
+			print("hello joseph")
+			print(result[0])
+			image = requests.get(result[0]["hdurl"]).content
 			try:
 				with open(NOTEFILE) as f:
 					notefilejson = json.load(f)
